@@ -7,3 +7,4 @@ mnist.pkl
 .ipynb_checkpoints
 venv/
 .envrc
+.mp4
