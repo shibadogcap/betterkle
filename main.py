@@ -3,6 +3,7 @@
 import cv2
 import argparse
 import time
+import matplotlib.pyplot as plt
 from camera import initialize_camera, initialize_window, get_frame, show_frame, cleanup
 from video import initialize_video
 from hand_detector import initialize_hand_detector, detect_hands, draw_hand_landmarks
@@ -37,6 +38,9 @@ def main():
     # FPS計算の初期化
     cv_fps_calc = CvFpsCalc(buffer_len=10)
 
+    # ランドマークの軌跡を保存するリスト
+    landmark_trajectories = []
+
     try:
         while cap.isOpened():
             # FPSを取得
@@ -52,6 +56,12 @@ def main():
 
             # ランドマークを描画（FPS表示付き）
             image = draw_hand_landmarks(image, detection_result, fps)
+
+            # ランドマークの軌跡を保存
+            if detection_result.hand_landmarks:
+                for hand_landmarks in detection_result.hand_landmarks:
+                    trajectory = [(lm.x, lm.y) for lm in hand_landmarks]
+                    landmark_trajectories.append(trajectory)
 
             # 画面に表示
             show_frame(image)
@@ -73,6 +83,18 @@ def main():
     finally:
         # リソースの解放
         cleanup(cap)
+
+        # ランドマークの軌跡を描画
+        if landmark_trajectories:
+            plt.figure(figsize=(10, 10))
+            for trajectory in landmark_trajectories:
+                x_coords, y_coords = zip(*trajectory)
+                plt.plot(x_coords, y_coords, marker='o')
+            plt.title("Landmark Trajectories")
+            plt.xlabel("X")
+            plt.ylabel("Y")
+            plt.gca().invert_yaxis()
+            plt.show()
 
 if __name__ == "__main__":
     main()
