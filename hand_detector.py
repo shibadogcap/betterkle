@@ -9,6 +9,7 @@ from config import MAX_NUM_HANDS, MODEL_URL, MODEL_DIR, MODEL_NAME
 from utils import download_file
 import os
 import absl.logging
+import denoise
 
 # abslログの設定
 absl.logging.set_verbosity(absl.logging.ERROR)
@@ -43,6 +44,10 @@ def detect_hands(detector, frame):
 
     # 検出
     detection_result = detector.detect(rgb_frame)
+
+    # ランドマークのデノイズ処理
+    if detection_result.hand_landmarks:
+        detection_result.hand_landmarks = denoise.filter_instance.filter_landmarks(detection_result.hand_landmarks)
 
     return detection_result, frame
 

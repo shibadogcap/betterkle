@@ -3,20 +3,25 @@
 import cv2
 import argparse
 from camera import initialize_camera, initialize_window, get_frame, show_frame, cleanup
+from video import initialize_video
 from hand_detector import initialize_hand_detector, detect_hands, draw_hand_landmarks
 from utils import CvFpsCalc
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", type=int, default=0, help="カメラデバイス番号")
+    parser.add_argument("--video", type=str, help="動画ファイルのパス")
     args = parser.parse_args()
     return args
 
 def main():
     args = get_args()
 
-    # カメラの初期化
-    cap, width, height = initialize_camera(args.device)
+    # カメラまたは動画の初期化
+    if args.video:
+        cap, width, height = initialize_video(args.video)
+    else:
+        cap, width, height = initialize_camera(args.device)
 
     # ウィンドウの初期化
     is_fullscreen = initialize_window(width, height)
