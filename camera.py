@@ -17,7 +17,8 @@ def initialize_camera(camera_index=DEFAULT_CAMERA_INDEX):
 
 def initialize_window(width, height):
     """ウィンドウを初期化する（サイズ変更不可）"""
-    cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(WINDOW_NAME, width, height)
     return False  # is_fullscreen
 
 def get_frame(cap):
@@ -28,6 +29,7 @@ def get_frame(cap):
 def show_frame(frame):
     """フレームをウィンドウに表示する"""
     cv2.imshow(WINDOW_NAME, frame)
+    cv2.setWindowProperty(WINDOW_NAME, cv2.WND_PROP_TOPMOST, 1)
 
 def cleanup(cap):
     """リソースを解放する"""

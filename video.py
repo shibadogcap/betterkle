@@ -10,8 +10,9 @@ def initialize_video(video_path):
     # 実際の解像度を取得
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
 
-    return cap, width, height
+    return cap, width, height, fps
 
 def initialize_window(width, height):
     """ウィンドウを初期化する（サイズ変更不可）"""

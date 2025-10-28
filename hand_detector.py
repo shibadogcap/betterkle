@@ -55,14 +55,35 @@ def draw_hand_landmarks(image, detection_result, fps=None):
     """検出された手のランドマークを描画する"""
     image_width, image_height = image.shape[1], image.shape[0]
 
-    for hand_landmarks in detection_result.hand_landmarks:
+    for i, hand_landmarks in enumerate(detection_result.hand_landmarks):
+        # 左右の手を判定
+        if detection_result.handedness and i < len(detection_result.handedness):
+            hand_handedness = detection_result.handedness[i]
+            if isinstance(hand_handedness, list) and len(hand_handedness) > 0:
+                handedness = hand_handedness[0].category_name
+            elif hasattr(hand_handedness, 'category_name'):
+                handedness = hand_handedness.category_name
+            else:
+                handedness = "Unknown"
+        else:
+            handedness = "Unknown"
+        if handedness == "Right":
+            landmark_color = (0, 255, 0)  # 緑
+            line_color = (220, 220, 220)  # 灰
+        elif handedness == "Left":
+            landmark_color = (0, 0, 255)  # 赤
+            line_color = (180, 180, 180)  # 暗灰
+        else:
+            landmark_color = (0, 255, 255)  # 黄
+            line_color = (200, 200, 200)
+
         # ランドマークを描画
         for landmark in hand_landmarks:
             if landmark.visibility < 0 or landmark.presence < 0:
                 continue
             landmark_x = int(landmark.x * image_width)
             landmark_y = int(landmark.y * image_height)
-            cv2.circle(image, (landmark_x, landmark_y), 5, (0, 255, 0), -1)
+            cv2.circle(image, (landmark_x, landmark_y), 5, landmark_color, -1)
 
         # 接続線を描画
         connections = [
@@ -71,12 +92,13 @@ def draw_hand_landmarks(image, detection_result, fps=None):
             (0, 9), (9, 10), (10, 11), (11, 12),  # 中指
             (0, 13), (13, 14), (14, 15), (15, 16),  # 薬指
             (0, 17), (17, 18), (18, 19), (19, 20),  # 小指
+            (2, 5), (5, 9), (9, 13), (13, 17)  # 手のひらの接続
         ]
         for connection in connections:
             start_idx, end_idx = connection
             start_point = (int(hand_landmarks[start_idx].x * image_width), int(hand_landmarks[start_idx].y * image_height))
             end_point = (int(hand_landmarks[end_idx].x * image_width), int(hand_landmarks[end_idx].y * image_height))
-            cv2.line(image, start_point, end_point, (220, 220, 220), 2)
+            cv2.line(image, start_point, end_point, line_color, 2)
 
     # FPSを表示
     if fps is not None:

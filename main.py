@@ -2,6 +2,7 @@
 
 import cv2
 import argparse
+import time
 from camera import initialize_camera, initialize_window, get_frame, show_frame, cleanup
 from video import initialize_video
 from hand_detector import initialize_hand_detector, detect_hands, draw_hand_landmarks
@@ -19,9 +20,13 @@ def main():
 
     # カメラまたは動画の初期化
     if args.video:
-        cap, width, height = initialize_video(args.video)
+        cap, width, height, video_fps = initialize_video(args.video)
+        frame_time = 1 / video_fps if video_fps > 0 else 0
+        prev_time = time.time()
     else:
         cap, width, height = initialize_camera(args.device)
+        frame_time = 0  # カメラの場合は制御しない
+        prev_time = time.time()
 
     # ウィンドウの初期化
     is_fullscreen = initialize_window(width, height)
@@ -51,9 +56,20 @@ def main():
             # 画面に表示
             show_frame(image)
 
-            # 'q'キーで終了
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            # キー入力の処理
+            key = cv2.waitKey(1) & 0xFF
+            if key != 255:  # キーが押された場合
+                print(f"Pressed key: {chr(key) if key < 128 else 'unknown'}")
+            if key == 27:  # ESCキーで終了
                 break
+
+            # ビデオの場合、フレームレートを制御
+            if args.video and frame_time > 0:
+                curr_time = time.time()
+                elapsed = curr_time - prev_time
+                if elapsed < frame_time:
+                    time.sleep(frame_time - elapsed)
+                prev_time = curr_time
     finally:
         # リソースの解放
         cleanup(cap)
